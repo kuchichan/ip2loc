@@ -22,12 +22,10 @@ env.read_env(env.str("ENV_PATH", ".env"))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
-
+API_KEY = env("API_KEY")
 # Application definition
 
 INSTALLED_APPS = [
@@ -37,6 +35,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "mapper.apps.MapperConfig",
 ]
 
 MIDDLEWARE = [
