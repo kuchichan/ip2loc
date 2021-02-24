@@ -20,5 +20,6 @@ from mapper.urls import router
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include(router.urls))
+    path("api/", include(router.urls)),
+    path("api/mapper/", include("mapper.urls"))
 ]
