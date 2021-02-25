@@ -49,3 +49,8 @@ class MapperView(APIView):
         IpAddress.objects.create(ip_address=ip_address, geo_data=geo_data)
 
         return Response(status=status.HTTP_200_OK)
+
+    def get(self, request, ip_address):
+        ip_address = IpAddress.objects.get(ip_address=ip_address)
+        serializer = GeoDataSerializer(ip_address.geo_data)
+        return Response(serializer.data)
