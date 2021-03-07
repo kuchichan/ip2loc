@@ -56,11 +56,23 @@ def test_build_url():
 
     assert url == mapper_view.ipstack_url + ip_address + "?" + f"access_key={api_key}"
 
+
 def test_get_geodata_from_ip(mocked_request, json_data_dict):
     ip_address = "192.168.0.1"
-    
+
     mapper_view = MapperView()
     result = mapper_view.get_geodata_from_ip(ip_address)
     mocked_request.assert_called_with(mapper_view.build_url(ip_address))
-    
+
     assert result == json_data_dict
+
+
+def test_post_mapper_view(mocked_request, json_data_dict, client_jwt):
+    url = reverse("mapper:map", kwargs={"ip_address": "154.121.11.143"})
+    response = client_jwt.post(url)
+    ip_address_model = IpAddress.objects.last()
+
+    assert response.status_code == 200
+    assert ip_address_model.ip_address == "154.121.11.143"
+    assert ip_address_model.geo_data.region_code == "DS"
+    assert ip_address_model.geo_data.country_code == "PL"
