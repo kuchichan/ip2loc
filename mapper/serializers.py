@@ -26,6 +26,7 @@ class GeoDataSerializer(serializers.ModelSerializer):
             "zip"
         )
 
+    # Neeeded? 
     @staticmethod
     def prepare_data(data: bytes) -> dict:
         stream = io.BytesIO(data)
