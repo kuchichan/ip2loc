@@ -2,6 +2,7 @@ import requests
 import urllib
 
 from django.conf import settings
+from django.http import Http404
 
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
@@ -28,6 +29,12 @@ class MapperView(APIView):
     api_key_dict = dict(access_key=settings.API_KEY)
     permission_classes = [IsAuthenticated]
 
+    def get_address(self, ip_address):
+        try:
+            return IpAddress.objects.get(ip_address=ip_address)
+        except IpAddress.DoesNotExist:
+             raise Http404
+
     def build_url(self, ip_address):
         url = self.ipstack_url + ip_address + "?"
         return url + urllib.parse.urlencode(self.api_key_dict)
@@ -44,13 +51,43 @@ class MapperView(APIView):
         if geo_data_serializer.is_valid():
             geo_data = geo_data_serializer.save()
         else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         IpAddress.objects.create(ip_address=ip_address, geo_data=geo_data)
 
         return Response(status=status.HTTP_200_OK)
 
     def get(self, request, ip_address):
-        ip_address = IpAddress.objects.get(ip_address=ip_address)
+        ip_address = self.get_address(ip_address) 
         serializer = GeoDataSerializer(ip_address.geo_data)
         return Response(serializer.data)
+
+    def put(self, request, ip_address):
+        ip_address = self.get_address(ip_address)
+        serializer = GeoDataSerializer(ip_address.geo_data, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, ip_address):
+        ip_address = self.get_address(ip_address)
+        serializer = GeoDataSerializer(
+            ip_address.geo_data,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, ip_address):
+        GeoData.objects.filter(ip_address__ip_address=ip_address)
+        GeoData.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        
