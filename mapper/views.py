@@ -1,6 +1,5 @@
 import requests
-import urllib
-
+from urllib import parse
 from django.conf import settings
 from django.http import Http404
 
@@ -33,11 +32,11 @@ class MapperView(APIView):
         try:
             return IpAddress.objects.get(ip_address=ip_address)
         except IpAddress.DoesNotExist:
-             raise Http404
+            raise Http404
 
     def build_url(self, ip_address):
         url = self.ipstack_url + ip_address + "?"
-        return url + urllib.parse.urlencode(self.api_key_dict)
+        return url + parse.urlencode(self.api_key_dict)
 
     def get_geodata_from_ip(self, ip_address):
         url = self.build_url(ip_address)
@@ -58,7 +57,7 @@ class MapperView(APIView):
         return Response(status=status.HTTP_200_OK)
 
     def get(self, request, ip_address):
-        ip_address = self.get_address(ip_address) 
+        ip_address = self.get_address(ip_address)
         serializer = GeoDataSerializer(ip_address.geo_data)
         return Response(serializer.data)
 
@@ -75,9 +74,7 @@ class MapperView(APIView):
     def patch(self, request, ip_address):
         ip_address = self.get_address(ip_address)
         serializer = GeoDataSerializer(
-            ip_address.geo_data,
-            data=request.data,
-            partial=True
+            ip_address.geo_data, data=request.data, partial=True
         )
 
         if serializer.is_valid():
@@ -87,7 +84,7 @@ class MapperView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, ip_address):
-        GeoData.objects.filter(ip_address__ip_address=ip_address)
-        GeoData.delete()
+        geo_data = GeoData.objects.filter(ip_address__ip_address=ip_address)
+        geo_data.delete()
+
         return Response(status=status.HTTP_204_NO_CONTENT)
-        
