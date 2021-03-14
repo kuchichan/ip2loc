@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from mapper.models import IpAddress
+from mapper.models import GeoData, IpAddress
 from mapper.serializers import GeoDataSerializer
 from mapper.views import MapperView
 
@@ -76,3 +76,15 @@ def test_post_mapper_view(mocked_request, json_data_dict, client_jwt):
     assert ip_address_model.ip_address == "154.121.11.143"
     assert ip_address_model.geo_data.region_code == "DS"
     assert ip_address_model.geo_data.country_code == "PL"
+
+
+def test_delete_mapper_view(client_jwt, geo_data):
+    address = "192.255.10.12"
+    IpAddress.objects.create(ip_address=address, geo_data=geo_data)
+
+    url = reverse("mapper:map", kwargs={"ip_address": address})
+    response = client_jwt.delete(url)
+
+    assert response.status_code == 204
+    with pytest.raises(GeoData.DoesNotExist):
+        GeoData.objects.get(ip_adresses__ip_address=address)

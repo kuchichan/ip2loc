@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.parsers import JSONParser
 from .models import IpAddress, GeoData
 
+
 class IpAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = IpAddress
@@ -11,6 +12,7 @@ class IpAddressSerializer(serializers.ModelSerializer):
 
 class GeoDataSerializer(serializers.ModelSerializer):
     zip = serializers.CharField(source="zip_code")
+
     class Meta:
         model = GeoData
         fields = (
@@ -23,10 +25,10 @@ class GeoDataSerializer(serializers.ModelSerializer):
             "city",
             "latitude",
             "longitude",
-            "zip"
+            "zip",
         )
 
-    # Neeeded? 
+    # Neeeded?
     @staticmethod
     def prepare_data(data: bytes) -> dict:
         stream = io.BytesIO(data)

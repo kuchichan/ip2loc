@@ -20,7 +20,7 @@ class GeoDataFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = GeoData
 
-        
+
 @pytest.fixture
 def geo_data():
     return GeoDataFactory()

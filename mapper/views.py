@@ -1,3 +1,4 @@
+from mapper.tests.factories import geo_data
 import requests
 from urllib import parse
 from django.conf import settings
@@ -84,7 +85,7 @@ class MapperView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, ip_address):
-        geo_data = GeoData.objects.filter(ip_address__ip_address=ip_address)
+        geo_data = GeoData.objects.filter(ip_adresses__ip_address=ip_address)
         geo_data.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
