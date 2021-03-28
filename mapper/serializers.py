@@ -32,8 +32,8 @@ class GeoDataSerializer(serializers.ModelSerializer):
     @staticmethod
     def prepare_data(data: bytes) -> dict:
         stream = io.BytesIO(data)
-        data = JSONParser().parse(stream)
-        data.pop("ip")
-        data.pop("location")
-        data.pop("type")
-        return data
+        parsed_data = JSONParser().parse(stream)
+        parsed_data.pop("ip")
+        parsed_data.pop("location")
+        parsed_data.pop("type")
+        return parsed_data

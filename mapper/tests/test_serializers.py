@@ -1,7 +1,6 @@
 import pytest
-import json
 
-from mapper.serializers import IpAddressSerializer, GeoDataSerializer
+from mapper.serializers import GeoDataSerializer
 from mapper.models import GeoData
 
 pytestmark = pytest.mark.django_db

@@ -1,6 +1,7 @@
 import pytest
 
 from django.urls import reverse
+from requests import __build__
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -67,12 +68,16 @@ def test_get_geodata_from_ip(mocked_request, json_data_dict):
     assert result == json_data_dict
 
 
-def test_post_mapper_view(mocked_request, json_data_dict, client_jwt):
-    url = reverse("mapper:map", kwargs={"ip_address": "154.121.11.143"})
+def test_post_mapper_view(mocked_request, client_jwt):
+    ip_addr = "154.121.11.143"
+    mapper_view = MapperView()
+    built_url = mapper_view.build_url(ip_addr)
+    url = reverse("mapper:map", kwargs={"ip_address": ip_addr})
     response = client_jwt.post(url)
     ip_address_model = IpAddress.objects.last()
 
     assert response.status_code == 200
+    mocked_request.assert_called_once_with(built_url)
     assert ip_address_model.ip_address == "154.121.11.143"
     assert ip_address_model.geo_data.region_code == "DS"
     assert ip_address_model.geo_data.country_code == "PL"
@@ -88,3 +93,26 @@ def test_delete_mapper_view(client_jwt, geo_data):
     assert response.status_code == 204
     with pytest.raises(GeoData.DoesNotExist):
         GeoData.objects.get(ip_adresses__ip_address=address)
+
+
+def test_put_mapper_view(client_jwt, geo_data, json_data):
+    address = "192.255.10.12"
+    IpAddress.objects.create(ip_address=address, geo_data=geo_data)
+
+    url = reverse("mapper:map", kwargs={"ip_address": address})
+    response = client_jwt.put(
+        url, data=GeoDataSerializer.prepare_data(json_data), format="json"
+    )
+
+    assert response.status_code == 200
+
+
+def test_patch_mapper_view(client_jwt, geo_data):
+    address = "192.255.10.12"
+    IpAddress.objects.create(ip_address=address, geo_data=geo_data)
+
+    url = reverse("mapper:map", kwargs={"ip_address": address})
+    response = client_jwt.patch(url, data={"country_code": "DE"}, format="json")
+
+    assert response.status_code == 200
+    assert IpAddress.objects.all().last().geo_data.country_code == "DE"
